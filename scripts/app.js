@@ -2,6 +2,7 @@
 
 let habits = [];
 const HABITS_KEY = "HABITS_KEY";
+let globalActiveHabitId;
 
 const page = {
   menu: document.querySelector(".menu__list"),
@@ -9,6 +10,10 @@ const page = {
     h1: document.querySelector(".h1"),
     progressPercent: document.querySelector(".progress__percent"),
     progressCoverBar: document.querySelector(".progress__cover-bar"),
+  },
+  content: {
+    daysContainer: document.getElementById("days"),
+    habbitDay: document.querySelector(".habbit__day"),
   },
 };
 
@@ -76,14 +81,111 @@ function rerenderHeader(activeHabit) {
   page.header.progressCoverBar.setAttribute("style", `width: ${percentage}%`);
 }
 
+function rerenderBody(activeHabit) {
+  if (!activeHabit) {
+    return null;
+  }
+
+  page.content.daysContainer.innerHTML = "";
+  for (const index in activeHabit.days) {
+    const element = document.createElement("div");
+    element.classList.add("habbit");
+    element.innerHTML = `<div class="habbit__day">День ${+index + 1}</div>
+      <div class="habbit__comment">${activeHabit.days[index].comment}</div>
+      <button onclick="onDelete(${index})" class="habbit__delete">
+        <img src="./images/delete.svg" alt="Удалите день ${index + 1}" />
+      </button>
+    `;
+    page.content.daysContainer.appendChild(element);
+  }
+  page.content.habbitDay.innerHTML = `День ${activeHabit.days.length + 1}`;
+}
+
+/* manipulations with days */
+function onAddDay(event) {
+  event.preventDefault();
+  const form = event.target;
+  const data = new FormData(form);
+  const comment = data.get("comment");
+
+  form["comment"].classList.remove("error");
+  if (!comment) {
+    form["comment"].classList.add("error");
+  }
+
+  habits = habits.map((habit) => {
+    if (habit.id === globalActiveHabitId) {
+      return {
+        ...habit,
+        days: habit.days.concat([{ comment }]),
+      };
+    } else {
+      return habit;
+    }
+  });
+
+  form["comment"].value = "";
+  rerender(globalActiveHabitId);
+  saveHabit();
+}
+
+function onDelete(index) {
+  habits = habits.map((habit) => {
+    if (habit.id === globalActiveHabitId) {
+      habit.days.splice(index, 1);
+      return {
+        ...habit,
+        days: habit.days,
+      };
+    }
+    return habit;
+  });
+  rerender(globalActiveHabitId);
+  saveHabit();
+}
+
+/* popup actions */
+function togglePopup() {
+  const popup = document.querySelector(".cover");
+  popup.classList.toggle("cover_hidden");
+}
+
+/* work with icons within form */
+function setIcon(context, icon) {
+  document.querySelector(".popup__form input[name='icon']").value = icon;
+  const activeIcon = document.querySelector(".icon.icon_active");
+  activeIcon.classList.remove("icon_active");
+  context.classList.add("icon_active");
+}
+
+function onAddNewHabit(event) {
+  event.preventDefault();
+  const form = event.target;
+  const data = new FormData(form);
+
+  const icon = data.get("icon");
+  const name = data.get("name");
+  const target = data.get("target");
+
+  habits.push({
+    id: habits.length + 1,
+    icon: icon,
+    name: name,
+    target: target,
+    days: [],
+  });
+  togglePopup();
+  saveHabit();
+  rerender(globalActiveHabitId);
+}
+
 function rerender(activeHabitId) {
-  console.log(activeHabitId);
+  globalActiveHabitId = activeHabitId;
   const activeHabit = habits.find((habit) => habit.id === activeHabitId);
   rerenderMenu(activeHabit);
   rerenderHeader(activeHabit);
+  rerenderBody(activeHabit);
 }
-
-console.log("here");
 
 (() => {
   loadHabits();
