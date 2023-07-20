@@ -111,22 +111,22 @@ function onAddDay(event) {
   form["comment"].classList.remove("error");
   if (!comment) {
     form["comment"].classList.add("error");
+  } else {
+    habits = habits.map((habit) => {
+      if (habit.id === globalActiveHabitId) {
+        return {
+          ...habit,
+          days: habit.days.concat([{ comment }]),
+        };
+      } else {
+        return habit;
+      }
+    });
+
+    form["comment"].value = "";
+    rerender(globalActiveHabitId);
+    saveHabit();
   }
-
-  habits = habits.map((habit) => {
-    if (habit.id === globalActiveHabitId) {
-      return {
-        ...habit,
-        days: habit.days.concat([{ comment }]),
-      };
-    } else {
-      return habit;
-    }
-  });
-
-  form["comment"].value = "";
-  rerender(globalActiveHabitId);
-  saveHabit();
 }
 
 function onDelete(index) {
@@ -167,16 +167,28 @@ function onAddNewHabit(event) {
   const name = data.get("name");
   const target = data.get("target");
 
-  habits.push({
-    id: habits.length + 1,
-    icon: icon,
-    name: name,
-    target: target,
-    days: [],
-  });
-  togglePopup();
-  saveHabit();
-  rerender(globalActiveHabitId);
+  form["name"].classList.remove("error");
+  form["target"].classList.remove("error");
+
+  if (!target && !name) {
+    form["name"].classList.add("error");
+    form["target"].classList.add("error");
+  } else if (!name) {
+    form["name"].classList.add("error");
+  } else if (!target) {
+    form["name"].classList.add("error");
+  } else {
+    habits.push({
+      id: habits.length + 1,
+      icon: icon,
+      name: name,
+      target: target,
+      days: [],
+    });
+    togglePopup();
+    saveHabit();
+    rerender(globalActiveHabitId);
+  }
 }
 
 function rerender(activeHabitId) {
