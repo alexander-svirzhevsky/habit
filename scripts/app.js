@@ -177,18 +177,17 @@ function onAddNewHabit(event) {
     form["name"].classList.add("error");
   } else if (!target) {
     form["name"].classList.add("error");
-  } else {
-    habits.push({
-      id: habits.length + 1,
-      icon: icon,
-      name: name,
-      target: target,
-      days: [],
-    });
-    togglePopup();
-    saveHabit();
-    rerender(globalActiveHabitId);
   }
+  habits.push({
+    id: habits.length + 1,
+    icon: icon,
+    name: name,
+    target: target,
+    days: [],
+  });
+  togglePopup();
+  saveHabit();
+  rerender(globalActiveHabitId);
 }
 
 function rerender(activeHabitId) {
